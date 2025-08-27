@@ -1,0 +1,13 @@
+cd bulk-email-app
+
+# Send specific campaign by ID
+php artisan campaign:send 1
+
+# Send all draft campaigns
+php artisan campaign:send --all
+
+# Send all scheduled campaigns
+php artisan campaign:send --scheduled
+
+# View all available campaigns
+php artisan campaign:send

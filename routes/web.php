@@ -25,6 +25,13 @@ Route::get('/', function () {
 Route::resource('templates', EmailTemplateController::class);
 Route::post('templates/{template}/preview', [EmailTemplateController::class, 'preview'])->name('templates.preview');
 
+// Recipients & Groups
+use App\Http\Controllers\RecipientController;
+Route::get('recipients', [RecipientController::class, 'index'])->name('recipients.index');
+Route::post('recipients', [RecipientController::class, 'store'])->name('recipients.store');
+Route::post('recipients/{recipient}/toggle', [RecipientController::class, 'toggle'])->name('recipients.toggle');
+Route::delete('recipients/{recipient}', [RecipientController::class, 'destroy'])->name('recipients.destroy');
+
 // Email Campaigns Routes
 Route::resource('campaigns', EmailCampaignController::class);
 Route::post('campaigns/{campaign}/send', [EmailCampaignController::class, 'send'])->name('campaigns.send');

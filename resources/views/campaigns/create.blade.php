@@ -145,26 +145,69 @@
 
                                 <div class="mb-3">
                                     <label class="form-label">Recipients *</label>
-                                    <div id="recipients-container">
-                                        <div class="recipient-row">
-                                            <div class="row">
-                                                <div class="col-md-5">
-                                                    <input type="email" class="form-control" name="recipients[0][email]" placeholder="Email address" required>
+
+                                    <ul class="nav nav-tabs" id="recipientTab" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual" type="button" role="tab">Manual</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="groups-tab" data-bs-toggle="tab" data-bs-target="#groups" type="button" role="tab">Groups</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content border border-top-0 p-3 rounded-bottom" id="recipientTabContent">
+                                        <div class="tab-pane fade show active" id="manual" role="tabpanel">
+                                            <input type="hidden" name="recipient_mode" value="manual">
+                                            <div id="recipients-container">
+                                                <div class="recipient-row">
+                                                    <div class="row">
+                                                        <div class="col-md-5">
+                                                            <input type="email" class="form-control" name="recipients[0][email]" placeholder="Email address">
+                                                        </div>
+                                                        <div class="col-md-5">
+                                                            <input type="text" class="form-control" name="recipients[0][name]" placeholder="Name (optional)">
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <button type="button" class="btn btn-outline-danger btn-sm remove-recipient" style="display: none;">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-5">
-                                                    <input type="text" class="form-control" name="recipients[0][name]" placeholder="Name (optional)">
+                                            </div>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-recipient">
+                                                <i class="fas fa-plus me-1"></i>Add Another Recipient
+                                            </button>
+                                        </div>
+                                        <div class="tab-pane fade" id="groups" role="tabpanel">
+                                            <input type="hidden" name="recipient_mode" value="groups" disabled>
+                                            <div class="row g-3">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Scope</label>
+                                                    <select name="group_scope" id="group_scope" class="form-select" disabled>
+                                                        <option value="all">All Groups</option>
+                                                        <option value="specific">Specific Groups</option>
+                                                    </select>
                                                 </div>
-                                                <div class="col-md-2">
-                                                    <button type="button" class="btn btn-outline-danger btn-sm remove-recipient" style="display: none;">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
+                                                <div class="col-md-6" id="group_select_wrapper" style="display:none;">
+                                                    <label class="form-label">Select Groups</label>
+                                                    <select name="group_ids[]" id="group_ids" class="form-select" multiple>
+                                                        @foreach($groups as $group)
+                                                            <option value="{{ $group->id }}" {{ $group->is_active ? '' : 'disabled' }}>
+                                                                {{ $group->name }} {{ $group->is_active ? '' : '(inactive)' }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</small>
+                                                </div>
+                                                <div class="col-md-2 d-flex align-items-end">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" id="only_active" name="only_active" checked disabled>
+                                                        <label class="form-check-label" for="only_active">Only active</label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" id="add-recipient">
-                                        <i class="fas fa-plus me-1"></i>Add Another Recipient
-                                    </button>
                                 </div>
 
                                 <div class="d-flex justify-content-end gap-2">
@@ -185,6 +228,37 @@
     <script>
         let recipientCount = 1;
 
+        const manualTab = document.getElementById('manual-tab');
+        const groupsTab = document.getElementById('groups-tab');
+        const manualHidden = document.querySelector('#manual input[name="recipient_mode"]');
+        const groupsHidden = document.querySelector('#groups input[name="recipient_mode"]');
+        const groupScope = document.getElementById('group_scope');
+        const groupSelectWrapper = document.getElementById('group_select_wrapper');
+        const onlyActive = document.getElementById('only_active');
+
+        function setMode(mode) {
+            if (mode === 'manual') {
+                manualHidden.disabled = false; manualHidden.value = 'manual';
+                groupsHidden.disabled = true;
+                groupScope.disabled = true;
+                onlyActive.disabled = true;
+            } else {
+                manualHidden.disabled = true;
+                groupsHidden.disabled = false; groupsHidden.value = 'groups';
+                groupScope.disabled = false;
+                onlyActive.disabled = false;
+            }
+        }
+
+        manualTab.addEventListener('click', () => setMode('manual'));
+        groupsTab.addEventListener('click', () => setMode('groups'));
+
+        groupScope.addEventListener('change', function() {
+            groupSelectWrapper.style.display = this.value === 'specific' ? 'block' : 'none';
+        });
+
+        setMode('manual');
+
         document.getElementById('add-recipient').addEventListener('click', function() {
             const container = document.getElementById('recipients-container');
             const newRow = document.createElement('div');
@@ -192,7 +266,7 @@
             newRow.innerHTML = `
                 <div class="row">
                     <div class="col-md-5">
-                        <input type="email" class="form-control" name="recipients[${recipientCount}][email]" placeholder="Email address" required>
+                        <input type="email" class="form-control" name="recipients[${recipientCount}][email]" placeholder="Email address">
                     </div>
                     <div class="col-md-5">
                         <input type="text" class="form-control" name="recipients[${recipientCount}][name]" placeholder="Name (optional)">
@@ -207,17 +281,12 @@
             container.appendChild(newRow);
             recipientCount++;
 
-            // Show remove buttons for all rows except the first
-            document.querySelectorAll('.remove-recipient').forEach(btn => {
-                btn.style.display = 'block';
-            });
+            document.querySelectorAll('.remove-recipient').forEach(btn => { btn.style.display = 'block'; });
         });
 
         document.addEventListener('click', function(e) {
             if (e.target.closest('.remove-recipient')) {
                 e.target.closest('.recipient-row').remove();
-                
-                // Hide remove button if only one recipient remains
                 if (document.querySelectorAll('.recipient-row').length === 1) {
                     document.querySelector('.remove-recipient').style.display = 'none';
                 }

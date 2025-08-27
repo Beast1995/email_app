@@ -71,6 +71,10 @@
                             <i class="fas fa-bullhorn me-2"></i>
                             Campaigns
                         </a>
+                        <a class="nav-link" href="{{ route('recipients.index') }}">
+                            <i class="fas fa-users me-2"></i>
+                            Recipients
+                        </a>
                         <a class="nav-link" href="{{ route('templates.create') }}">
                             <i class="fas fa-plus me-2"></i>
                             New Template
